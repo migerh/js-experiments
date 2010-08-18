@@ -7,27 +7,44 @@
 	<body> 
 		<canvas id="c"></canvas> 
 		<script>
-            (function(document, Math, parseInt) {
+            (function(window, Math, parseInt) {
                 var canvas = document.getElementById('c'),
                     context = canvas.getContext('2d'),
-                    width = 640,
-                    height = 480,
-                    eye = [0,0,-40],
+                    width = 300,
+                    height = 225,
+                    eye = [0,0,-50],
+                    look_at = [0,0,3],
                     bg = '000',
                     maxDistance = 1e5,
+                    angle = Math.PI,
+
                     // normalize a vector
                     normalize = function(v) {
-                        // this is too big for now
-                        //        var d=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
-                        //        return [v[0]/d,v[1]/d,v[2]/d];
-                        return v;
+                                var d = Math.sqrt(sp(v,v));
+                                return [v[0]/d, v[1]/d, v[2]/d];
+                    },
+
+                    // subtract or add vectors: a - f*b
+                    vs = function(a, b, f) {
+                        f = f ? f : 1;
+                        return [a[0]-f*b[0], a[1]-f*b[1], a[2]-f*b[2]];
+                    },
+
+                    // scalar product
+                    sp = function(a, b) {
+                        return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+                    },
+
+                    // cross product
+                    cp = function(a, b) {
+                        return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
                     },
 
                     // scene, this is a singleton
                     scene = (function() {
                         // object list
                         var objectList = [],
-                                point = eye;
+                            camera = eye;
 
                         return {
 
@@ -42,9 +59,9 @@
                             // trace
                             t: function(start, direction) {
                                 var minDistance = maxDistance,
-                                        i, numberOfObjects = objectList.length,
-                                        objectIndex = numberOfObjects,
-                                        distance;
+                                    i, numberOfObjects = objectList.length,
+                                    objectIndex = numberOfObjects,
+                                    distance;
 
                                 // find object nearest to the camera
                                 for (i = 0; i < numberOfObjects; i++) {
@@ -56,27 +73,33 @@
                                 }
                                 // ray didn't hit any object
                                 if (objectIndex === numberOfObjects)
-                                    return bg;
+                                    objectIndex = bg;
                                 else
-                                    return objectList[objectIndex].c;
+                                    objectIndex = objectList[objectIndex].c;
+                                return objectIndex;
                             },
 
                             // render scene
                             r: function(canvas) {
                                 var i, j, k = 0,
-                                        color,
-                                        data = canvas.createImageData(width, height),
-                                        datadata = data.data,
-                                        SIXTEEN = 16;
+                                    color,
+                                    data = canvas.createImageData(width, height),
+                                    datadata = data.data,
+                                    SIXTEEN = 16,
+                                    zx = normalize(vs(look_at, camera)),
+                                    xx = normalize(cp([0,1,0], zx)),
+                                    yx = normalize(cp(xx, vs(look_at, zx))),
+                                    top_left = vs(vs(look_at, xx), yx, -height/width);
 
                                 for (j = 0; j < height; j++) {
                                     for (i = 0; i < width; i++) {
-                                        color = this.t(point, normalize([(j / (width - 1) - .5) * 2 * width / height, i / (height - 1) * 2 - 1, 3]));
-                                        k = (i + j * width) * 4;
-                                        datadata[k] = parseInt(color[0], SIXTEEN) * SIXTEEN;
-                                        datadata[k + 1] = parseInt(color[1], SIXTEEN) * SIXTEEN;
-                                        datadata[k + 2] = parseInt(color[2], SIXTEEN) * SIXTEEN;
-                                        datadata[k + 3] = 255;
+                                        color = this.t(camera, normalize(vs(vs(top_left, xx, -i/(width-1)*2), yx, j/(width-1)*2)));
+                                        // old one
+                                        //color = this.t(camera, normalize([(j*2 - height) / width, i/width*2 - 1, 3]));
+                                        datadata[k++] = parseInt(color[0], SIXTEEN) * SIXTEEN;
+                                        datadata[k++] = parseInt(color[1], SIXTEEN) * SIXTEEN;
+                                        datadata[k++] = parseInt(color[2], SIXTEEN) * SIXTEEN;
+                                        datadata[k++] = 255;
                                     }
                                 }
                                 canvas.putImageData(data, 0, 0);
@@ -88,33 +111,29 @@
                     sphere = function(center, radius, color) {
                         return {
                             c: color,
+
+                            // set center
+                            sc: function(newcenter) {
+                                center = newcenter;
+                            },
+
                             // calculate the intersection
                             i: function(start, direction) {
-                                var i, j, l, SQ,
-                                        DV = 0, DD = 0, VV = 0,
-                                        T1, T2,
-                                        V = [];
+                                var i, SQ, DV, V;
 
-                                for (i = 0; i < 3; i++) {
-                                    V[i] = start[i] - center[i];
-                                    j = direction[i];
-                                    l = V[i];
-                                    DV += l * j;
-                                    DD += j * j;
-                                    VV += l * l;
-                                }
-                                SQ = DV * DV - DD * (VV - radius * radius);
+                                V = vs(start, center);
+                                DV = sp(V, direction);
+                                SQ = DV * DV - (sp(V,V) - radius * radius);
 
                                 if (SQ < 0) {
                                     //no intersection
-                                    return -1;
+                                    i = -1;
                                 } else {
                                     // intersection
                                     SQ = Math.sqrt(SQ);
-                                    T1 = (-DV + SQ) / DD;
-                                    T2 = (-DV - SQ) / DD;
-                                    return (T1 < T2 ? T1 : T2);
+                                    i = Math.min(SQ-DV,-DV-SQ);
                                 }
+                                return i;
                             }
                             // normal not used yet
                             /*,
@@ -128,16 +147,35 @@
                         };
                     };
 
-            canvas.style.backgroundColor = '#' + bg;
-            canvas.width = width;
+            //canvas.style.backgroundColor = '#' + bg;
+            //canvas.width = width;
             canvas.height = height;
 
             scene.a(sphere([0,0,0], 3, 'ff0'));
-            scene.a(sphere([2.05,0,-3], 0.5, '008'));
-            scene.a(sphere([0,0,0], 3, 'f00'));
+            var kugel = sphere([3,2,3], 1, '008');
+            scene.a(kugel);
             scene.r(context);
 
-            })(document, Math, parseInt);
+            /* move forward and back angle = 0.5;*/
+            window.setTimeout(function() {
+                var p = Math.PI;
+                angle += 0.1;
+                //eye = [40*Math.sin(angle), 0, 40*Math.cos(angle)];
+                //look_at = [-3*Math.sin(angle+p), 0, -3*Math.cos(angle+p)];
+                kugel.sc([3*Math.sin(angle), 2, 3*Math.cos(angle)]);
+                //move forward and back
+                //if(eye[2]>-10)
+                //    angle = -0.5;
+                //if(eye[2]<-40)
+                //    angle = 0.5;
+                //eye[2] += angle;
+                
+
+                scene.r(context);
+                //window.setTimeout(arguments.callee, 1);
+            }, 1);
+
+            })(window, Math, parseInt);
 		</script> 
 	</body> 
 </html>

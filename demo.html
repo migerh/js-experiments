@@ -1,0 +1,143 @@
+<!doctype html> 
+<html> 
+	<head> 
+		<title>JS1k, 1k demo submission [id]</title> 
+		<meta charset="utf-8" /> 
+	</head> 
+	<body> 
+		<canvas id="c"></canvas> 
+		<script>
+            (function(document, Math, parseInt) {
+                var canvas = document.getElementById('c'),
+                    context = canvas.getContext('2d'),
+                    width = 640,
+                    height = 480,
+                    eye = [0,0,-40],
+                    bg = '000',
+                    maxDistance = 1e5,
+                    // normalize a vector
+                    normalize = function(v) {
+                        // this is too big for now
+                        //        var d=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+                        //        return [v[0]/d,v[1]/d,v[2]/d];
+                        return v;
+                    },
+
+                    // scene, this is a singleton
+                    scene = (function() {
+                        // object list
+                        var objectList = [],
+                                point = eye;
+
+                        return {
+
+                            // add object to scene
+                            // object should have a method c which
+                            // calculates the intersection with a
+                            // given ray and a property co
+                            a: function(object) {
+                                objectList.push(object);
+                            },
+
+                            // trace
+                            t: function(start, direction) {
+                                var minDistance = maxDistance,
+                                        i, numberOfObjects = objectList.length,
+                                        objectIndex = numberOfObjects,
+                                        distance;
+
+                                // find object nearest to the camera
+                                for (i = 0; i < numberOfObjects; i++) {
+                                    distance = objectList[i].i(start, direction);
+                                    if (distance > 0 && distance < minDistance) {
+                                        minDistance = distance;
+                                        objectIndex = i;
+                                    }
+                                }
+                                // ray didn't hit any object
+                                if (objectIndex === numberOfObjects)
+                                    return bg;
+                                else
+                                    return objectList[objectIndex].c;
+                            },
+
+                            // render scene
+                            r: function(canvas) {
+                                var i, j, k = 0,
+                                        color,
+                                        data = canvas.createImageData(width, height),
+                                        datadata = data.data,
+                                        SIXTEEN = 16;
+
+                                for (j = 0; j < height; j++) {
+                                    for (i = 0; i < width; i++) {
+                                        color = this.t(point, normalize([(j / (width - 1) - .5) * 2 * width / height, i / (height - 1) * 2 - 1, 3]));
+                                        k = (i + j * width) * 4;
+                                        datadata[k] = parseInt(color[0], SIXTEEN) * SIXTEEN;
+                                        datadata[k + 1] = parseInt(color[1], SIXTEEN) * SIXTEEN;
+                                        datadata[k + 2] = parseInt(color[2], SIXTEEN) * SIXTEEN;
+                                        datadata[k + 3] = 255;
+                                    }
+                                }
+                                canvas.putImageData(data, 0, 0);
+                            }
+                        }
+                    })(),
+
+                    // make sphere
+                    sphere = function(center, radius, color) {
+                        return {
+                            c: color,
+                            // calculate the intersection
+                            i: function(start, direction) {
+                                var i, j, l, SQ,
+                                        DV = 0, DD = 0, VV = 0,
+                                        T1, T2,
+                                        V = [];
+
+                                for (i = 0; i < 3; i++) {
+                                    V[i] = start[i] - center[i];
+                                    j = direction[i];
+                                    l = V[i];
+                                    DV += l * j;
+                                    DD += j * j;
+                                    VV += l * l;
+                                }
+                                SQ = DV * DV - DD * (VV - radius * radius);
+
+                                if (SQ < 0) {
+                                    //no intersection
+                                    return -1;
+                                } else {
+                                    // intersection
+                                    SQ = Math.sqrt(SQ);
+                                    T1 = (-DV + SQ) / DD;
+                                    T2 = (-DV - SQ) / DD;
+                                    return (T1 < T2 ? T1 : T2);
+                                }
+                            }
+                            // normal not used yet
+                            /*,
+                             // normal
+                             n: function(po) {
+                             var n = [], i;
+                             for(i=0;i<3;i++)
+                             n[i] = (po[i] - p[i])/r;
+                             return n;
+                             }*/
+                        };
+                    };
+
+            canvas.style.backgroundColor = '#' + bg;
+            canvas.width = width;
+            canvas.height = height;
+
+            scene.a(sphere([0,0,0], 3, 'ff0'));
+            scene.a(sphere([2.05,0,-3], 0.5, '008'));
+            scene.a(sphere([0,0,0], 3, 'f00'));
+            scene.r(context);
+
+            })(document, Math, parseInt);
+		</script> 
+	</body> 
+</html>

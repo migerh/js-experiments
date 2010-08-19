@@ -10,17 +10,70 @@
             (function(window, Math, parseInt) {
                 var canvas = document.getElementById('c'),
                     context = canvas.getContext('2d'),
-                    width = 300,
-                    height = 225,
-                    eye = [0,0,-50],
-                    look_at = [0,0,3],
+                    width = 600,
+                    height = 450,
+                    eye = [0,0,-40],
+                    look_at = [0,0,1.5],
                     bg = '000',
                     maxDistance = 1e5,
+                    rads = [0.000016267, 0.000040667, 0.000042667, 0.000022667, 0.00048, 0.0004, 0.000173333, 0.000166667],
+                    AmbientLight = '888',
+                    colors = ['aaa', 'da8', '6af', 'f00', '456', '090', 'c90', '00f'],
                     angle = Math.PI,
 
+                    // julian centuries since 2000
+                    T = Math.floor((new Date().getTime()-new Date(2000, 1, 1).getTime())/864e5)/36525,
+                    astrotable = [
+                        // mercury
+                        //a: 0                          e: 1                               I: 2                                   L: 3                                                 omega_: 4                            Omega: 5
+                        [0.38709927+T*37e-8,0.20563503+T*1906e-8,7.00497902-T*594749e-8,252.25032350+T*149472.67411175,77.45779628+T*0.16047689,48.33076593-T*0.12534081],
+                        // venus
+                        [0.72333566+T*39e-7,677672e-8-T*4107e-8,3.39467605-T*78890e-8,181.97909950+T*58517.81538729,131.60246718+T*268329e-8,76.67984255+T*0.27769418],
+                        // earth
+                        [1.00000261+T*562e-8,0.01671123-T*4392e-8,-1531e-8-T*0.01294668,100.46457166+T*35999.37244981,102.93768193+T*0.32327364,0],
+                        // mars
+                        [1.52371034+T*1847e-8,0.09339410+T*7882e-8,1.84969142-T*813131e-8,T*19140-4.55343205,T*0.44441088-23.94362959,49.55953891-T*0.29257343],
+                        // jupiter
+                        [5.20288700-T*11607e-8,0.04838624-T*13253e-8,1.30439695-T*183714e-8,34.39644051+T*3034.74612775,14.72847983+T*0.21252668,100.47390909+T*0.20469106],
+                        // saturn
+                        [9.53667594-T*125060e-8,0.05386179-T*50991e-8,2.48599187+T*193609e-8,49.95424423+T*1222.49362201,92.59887831-T*0.41897216,113.66242448-T*0.28867794],
+                        // uranus
+                        [19.18916464-T*196176e-8,0.04725744+T*4397e-8,0.77263783-T*242939e-8,313.23810451+T*428.48202785,170.95427630+T*0.40805281,74.01692503+T*0.04240589],
+                        // neptune
+                        [30.06992276+T*26291e-8,859048e-8+T*5105e-8,1.77004347+T*35372e-8,T*218.45945325-55.12002969,44.96476227-T*0.32241464,131.78422574-T*508664e-8]
+                        // pluto no more planet
+//                        Pluto    39.48211675      0.24882730     17.14001206      238.92903833    224.06891629    110.30393684
+//                                 -0.00031596      0.00005170      0.00004818      145.20780515     -0.04062942     -0.01183482
+                    ],
+
+                    center = function(i) {
+                        var omega = Math.PI/180*(astrotable[i][4]-astrotable[i][5]),
+                            M = Math.PI/180*(astrotable[i][3]-astrotable[i][4]),
+                            e = astrotable[i][1],
+                            r = astrotable[i][0],
+                            I = Math.PI/180*(astrotable[i][2]),
+                            fixit = function(x0, eps) {
+                                var x;
+
+                                do {
+                                    x = x0;
+                                    x0 = M + e*Math.sin(x);
+                                } while(Math.abs(x-x0) > eps);
+
+                                return x0;
+                            },
+                            E, u;
+
+                        for(;M<-Math.PI||M>Math.PI;M+=(M<0?1:-1)*2*Math.PI);
+                        E = fixit(M, 1/maxDistance);
+                        u = omega + 2*Math.atan(Math.sqrt((1+e)/(1-e))*Math.tan(E/2));
+                        r *= (1-e*Math.cos(E));
+                        return [r*(Math.cos(u)*Math.cos(astrotable[i][5])-Math.sin(u)*Math.cos(I)*Math.sin(astrotable[i][5])),r*(Math.cos(u)*Math.sin(astrotable[i][5])+Math.sin(u)*Math.cos(I)*Math.cos(astrotable[i][5])),r*(Math.sin(u)*Math.sin(I))];
+                    },
+
                     // normalize a vector
-                    normalize = function(v) {
-                                var d = Math.sqrt(sp(v,v));
+                    normalize = function(v, f) {
+                                var d = f ? 1/f : Math.sqrt(sp(v,v));
                                 return [v[0]/d, v[1]/d, v[2]/d];
                     },
 
@@ -44,7 +97,7 @@
                     scene = (function() {
                         // object list
                         var objectList = [],
-                            camera = eye;
+                            lightList = [];
 
                         return {
 
@@ -56,12 +109,17 @@
                                 objectList.push(object);
                             },
 
+                            // add light
+                            l: function(light) {
+                                lightList.push(light);
+                            },
+
                             // trace
                             t: function(start, direction) {
-                                var minDistance = maxDistance,
-                                    i, numberOfObjects = objectList.length,
-                                    objectIndex = numberOfObjects,
-                                    distance;
+                                var minDistance = maxDistance, intensity=[0,0,0],
+                                    i, j, k, numberOfObjects = objectList.length, numberOfLights = lightList.length,
+                                    objectIndex = numberOfObjects, shadow = false,
+                                    distance, normal, ref, nv, intersect, color, phong_size, phong_amount;
 
                                 // find object nearest to the camera
                                 for (i = 0; i < numberOfObjects; i++) {
@@ -72,11 +130,111 @@
                                     }
                                 }
                                 // ray didn't hit any object
-                                if (objectIndex === numberOfObjects)
-                                    objectIndex = bg;
-                                else
-                                    objectIndex = objectList[objectIndex].c;
-                                return objectIndex;
+                                if (objectIndex == numberOfObjects)
+                                    color = bg;
+                                else {
+                                    //if(objectIndex == 0) return 'ff0';
+                                    //i = objectList[objectIndex].c;
+
+                                    // Farbe am Schnittpunkt berechnen.
+                                    intersect = vs(start, direction, -minDistance);
+
+                                    // Normalenvektor im Schnittpunkt ermitteln
+                                    normal = objectList[objectIndex].n(intersect);
+
+                                    // Reflektierten Strahl berechnen (Spiegelung des einfallenden Strahls am Normalenvektor)
+                                    ref = vs(start, intersect);
+                                    nv = sp(normal, ref);
+
+                                    ref = vs([0,0,0], vs(ref, normal, 2*nv));
+                                    // the same only longer:
+                                    //for(i=0;i<3;i++)ref[i]=2*distance_normal[i]*nv-ref[i];
+
+                                    // Beleuchtung:
+                                    color = AmbientLight;
+                                    for(i = 0; i < numberOfLights; i++) {
+                                        direction = lightList[i].c;
+                                        // Schattenstrahl:
+                                        // don't trace to sun: j=1
+                                        for(j = 0; j < numberOfObjects; j++) {
+                                            if(j != objectIndex && objectList[j].i(intersect, normalize(direction)) > 0) {
+                                                shadow = true;
+                                                j = numberOfObjects;
+                                            }
+                                        }
+
+                                        if(!shadow) {
+                                            // Diffuse:
+                                            j = sp(normal, direction);
+
+                                            if(j > 0) {
+                                                for(k=0;k<3;k++) {
+                                                    intensity[k] = parseInt(lightList[i].co[k], 16)/16*j;
+                                                    //rgb[k] = parseInt(lightList[i].co[k], 16)*parseInt(objectList[objectIndex],16).c/256*j;
+                                                    //color[k] = Math.min(15, parseInt(color[k], 16) + rgb[k]).toString(16);
+                                                }
+                                            }
+
+                            	    		// Specular:
+	    		                            j = sp(ref, direction);
+
+                            	    		if(j > 0) {
+	    			                            phong_size = 0.1;//obj[closest].getPhongSize();
+	    			                            phong_amount = 0.1;//obj[closest].getPhongAmount();
+	    			                            j = Math.pow(j, phong_size) * phong_amount;
+                                                for(k=0;k<3;k++)
+                                                    intensity[k] += parseInt(lightList[i].co[k], 16)/16*j;
+	    			                            //rgb[0] += (lC.getRed() / 16. * j);
+	    	                              	}
+	    	                            }
+	                                }
+
+                                    for(k=0;k<3;k++) {
+                                        //color[k] = Math.min(15, parseInt(color[k], 16) + rgb[k]).toString(16);
+                                        //rgb[k] = ((pixelColor.getRed() / 256. + intensity[0]) * objColor.getRed()/256.);
+
+                                        intensity[k] = (parseInt(color[k], 16)/16+intensity[k])*parseInt(objectList[objectIndex].c[k], 16)/16;
+                                        intensity[k] = Math.ceil(Math.min(15, intensity[k])).toString(16)[0];  //(r > 1.0f ? 1.0f : r, g > 1.0f ? 1.0f : g, b > 1.0f ? 1.0f : b);
+                                    }
+                                    color = intensity.join('');
+
+
+
+                                            // Specular:
+/*                                            double abs = 0;
+                                            for(int j = 0; j != 3; j++)
+                                                abs += reflection[j]*reflection[j];
+
+                                            for(int j = 0; j != 3; j++)
+                                                reflection[j] = reflection[j] / Math.sqrt(abs);
+
+                                            factor = 0;
+                                            for(int j = 0; j != 3; j++)
+                                                factor += reflection[j] * lightDirection[j];
+
+                                            if(factor > 0) {
+                                                Color tmp = null;
+                                                float red = (float) ((float) ls[i].getColor().getRed() / 256. * Math.pow(factor, obj[closest].getPhongSize()) * obj[closest].getPhongAmount());
+                                                float green = (float) ((float) ls[i].getColor().getGreen() / 256. * Math.pow(factor, obj[closest].getPhongSize()) * obj[closest].getPhongAmount());
+                                                float blue = (float) ((float) ls[i].getColor().getBlue() / 256. * Math.pow(factor, obj[closest].getPhongSize()) * obj[closest].getPhongAmount());
+
+                                                tmp = new Color(red, green, blue);
+                                                color = new Color(Math.min(255, pixelColor.getRed() + tmp.getRed()),
+                                                        Math.min(255, pixelColor.getGreen() + tmp.getGreen()),
+                                                        Math.min(255, pixelColor.getBlue() + tmp.getBlue()));
+                                            }
+
+
+                                        // Reflektion:
+                                        if(recLevel < MaxRecLev & obj[closest].getReflection() > 0) {
+                                            Color nextCol = trace(intersectionPoint, reflection, recLevel+1);
+                                            color = new Color(Math.min(255, (int) (pixelColor.getRed() + nextCol.getRed() * obj[closest].getReflection())),
+                                                  Math.min(255, (int) (pixelColor.getGreen() + nextCol.getGreen() * obj[closest].getReflection())),
+                                                  Math.min(255, (int) (pixelColor.getBlue() + nextCol.getBlue() * obj[closest].getReflection())));
+
+                                        }*/
+                                }
+                                return color;
                             },
 
                             // render scene
@@ -86,14 +244,14 @@
                                     data = canvas.createImageData(width, height),
                                     datadata = data.data,
                                     SIXTEEN = 16,
-                                    zx = normalize(vs(look_at, camera)),
+                                    zx = normalize(vs(look_at, eye)),
                                     xx = normalize(cp([0,1,0], zx)),
-                                    yx = normalize(cp(xx, vs(look_at, zx))),
+                                    yx = normalize(cp(xx, vs([0,0,0], zx))),
                                     top_left = vs(vs(look_at, xx), yx, -height/width);
 
                                 for (j = 0; j < height; j++) {
                                     for (i = 0; i < width; i++) {
-                                        color = this.t(camera, normalize(vs(vs(top_left, xx, -i/(width-1)*2), yx, j/(width-1)*2)));
+                                        color = this.t(eye, normalize(vs(vs(top_left, xx, -i/(width-1)*2), yx, j/(width-1)*2)));
                                         // old one
                                         //color = this.t(camera, normalize([(j*2 - height) / width, i/width*2 - 1, 3]));
                                         datadata[k++] = parseInt(color[0], SIXTEEN) * SIXTEEN;
@@ -134,35 +292,48 @@
                                     i = Math.min(SQ-DV,-DV-SQ);
                                 }
                                 return i;
+                            },
+                            // normal
+                            n: function(p) {
+                               return normalize(vs(p, center), 1/radius);
                             }
-                            // normal not used yet
-                            /*,
-                             // normal
-                             n: function(po) {
-                             var n = [], i;
-                             for(i=0;i<3;i++)
-                             n[i] = (po[i] - p[i])/r;
-                             return n;
-                             }*/
+                        };
+                    },
+                    light = function(center, color) {
+                        return {
+                            co: color,
+                            c: center
                         };
                     };
 
             //canvas.style.backgroundColor = '#' + bg;
-            //canvas.width = width;
+            canvas.width = width;
             canvas.height = height;
 
-            scene.a(sphere([0,0,0], 3, 'ff0'));
-            var kugel = sphere([3,2,3], 1, '008');
-            scene.a(kugel);
+            // sun
+            scene.a(sphere([0,0,0], 4.64/10, 'ff0'));
+            scene.l(light([20,0,-20], 'fff'));
+            //scene.l(light([-5,0,0], 'fff'));
+            //scene.l(light([0,5,0], 'fff'));
+            //scene.l(light([0,-5,0], 'fff'));
+
+            var cen;
+            for(var i=0;i<astrotable.length;i++) {
+                cen = center(i);
+                //console.log(cen, Math.sqrt(sp(cen, cen)));
+                scene.a(sphere(cen, rads[i]*5000, colors[i]));
+            }
             scene.r(context);
 
             /* move forward and back angle = 0.5;*/
             window.setTimeout(function() {
                 var p = Math.PI;
-                angle += 0.1;
-                //eye = [40*Math.sin(angle), 0, 40*Math.cos(angle)];
+                angle -= 0.1;
+                eye = [40*Math.sin(angle), 0, 40*Math.cos(angle)];
+                look_at = vs(eye, normalize(vs([0,0,0], eye)), -43);
                 //look_at = [-3*Math.sin(angle+p), 0, -3*Math.cos(angle+p)];
-                kugel.sc([3*Math.sin(angle), 2, 3*Math.cos(angle)]);
+                //eye = [3*Math.sin(angle), 2, 3*Math.cos(angle)];
+                //console.log([Math.sqrt(sp(vs(look_at, eye), vs(look_at, eye))), ' speye ', Math.sqrt(sp(eye, eye)), ' eye '].concat(eye).concat(look_at).join(', '));
                 //move forward and back
                 //if(eye[2]>-10)
                 //    angle = -0.5;
@@ -172,10 +343,10 @@
                 
 
                 scene.r(context);
-                //window.setTimeout(arguments.callee, 1);
+                window.setTimeout(arguments.callee, 1);
             }, 1);
 
             })(window, Math, parseInt);
-		</script> 
+		</script>
 	</body> 
 </html>

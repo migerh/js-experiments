@@ -182,7 +182,7 @@
                             	    		if(j > 0) {
 	    			                            phong_size = 0.3;//obj[closest].getPhongSize();
 	    			                            phong_amount = 0.7;//obj[closest].getPhongAmount();
-	    			                            j = Math.pow(j, phong_size) * phong_amount;
+	    			                            j = 0;//Math.pow(j, phong_size) * phong_amount;
                                                 for(k=0;k<3;k++)
                                                     intensity[k] += parseInt(lightList[i].co[2*k]+lightList[i].co[2*k+1], SIXTEEN)/256*j;
 	    			                            //rgb[0] += (lC.getRed() / 16. * j);
@@ -317,9 +317,9 @@
             // sun
             scene.a(sphere([0,0,0], 4.64/10, 'ffff00'));
             scene.l(light([20,0,-20], 'ffffff'));
-            //scene.l(light([-5,0,0], 'fff'));
-            //scene.l(light([0,5,0], 'fff'));
-            //scene.l(light([0,-5,0], 'fff'));
+            //scene.l(light([-5,0,0], 'ffffff'));
+            //scene.l(light([0,5,0], 'ffffff'));
+            //scene.l(light([0,-5,0], 'ffffff'));
 
             var cen;
             for(var i=0;i<astrotable.length;i++) {

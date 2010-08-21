@@ -1,0 +1,123 @@
+<!doctype html>
+<html> 
+    <head> 
+        <title>JS1k, 1k demo submission [id]</title> 
+        <meta charset="utf-8" /> 
+    </head> 
+    <body> 
+        <canvas id="c"></canvas> 
+<script type="text/javascript">
+    (function (document, getElementsByTagName, innerHTML, start) {
+        document.write('<br/><a href="#">'+start+'</a><p></p>');
+        
+        var // constants
+            c = document[getElementsByTagName]('canvas')[0],
+            body = document[getElementsByTagName]('body')[0],
+            scoredisplay = document[getElementsByTagName]('p')[0],
+            button = document[getElementsByTagName]('a')[0],
+            width = 480,
+            height = 360,
+            paddleWidth = 60,
+            ballSize = 12,
+            paddleY = 349,
+            points = 'Points:',
+            // variables
+            paddleX,
+            ballX,
+            ballY,
+            ballDX,
+            ballDY,
+            pong = c.getContext("2d"),
+            running = 0,
+            score = 0,
+            pause = 1;
+            
+        // functions
+        function draw() {
+            // paddle
+            pong.fillRect(paddleX,paddleY-6,paddleWidth,ballSize);
+
+            // ball
+            pong.beginPath();
+            pong.arc(ballX, ballY, ballSize, 0, 7, 1);
+            pong.fill();
+        }
+            
+        function redraw() {
+            var cont = 1;
+
+            if(!pause) {
+                pong.clearRect(0, 0, width, height);
+                ballX += ballDX;
+                ballY += ballDY;
+
+                if(ballY < ballSize) {
+                    ballDY *= -1;
+                    ballY += ballDY;
+                }
+
+                if(ballX < ballSize || ballX >= width - ballSize) {
+                    ballDX *= -1;
+                    ballX += ballDX;
+                }
+                if(ballY > paddleY - 18 && ballY < height - 5 && ballX >= paddleX && ballX <= paddleX + paddleWidth) {
+                    ballDY *= -1;
+                    ballY += ballDY;
+                    ballDX += (ballX - paddleX - 30) / 5;
+                    scoredisplay[innerHTML] = points + ++score;
+                }
+
+                draw();
+                if(!(ballY > height - ballSize))
+                    setTimeout(redraw, 33);
+                else {
+                    scoredisplay[innerHTML] += '-GAME OVER';
+                    pause = 1;
+                    running = 0;
+                    button[innerHTML] = start;
+                }
+            }
+        }
+        
+        function init() {
+            paddleX = 210;
+            ballX = 234;
+            ballY = 17;
+            ballDX = 1.5;
+            ballDY = 8;
+            score = 0;
+            scoredisplay[innerHTML] = points + score;
+        }
+        
+        function startGame() {
+            if(!running)
+                init();
+            running = 1;
+            if(pause) {
+                button[innerHTML] = 'Pause';
+                setTimeout(redraw, 33);
+            } else
+                button[innerHTML] = 'Continue';
+            pause=!pause;
+        }
+
+        c.width = width;
+        c.height = height;
+        c.style.border = 'solid #000';
+        button.onclick = startGame;
+
+        init();
+        draw();
+
+        document.onkeypress = document.onkeydown = document.onkeyup = function(e) {
+            if(!pause) {
+                if(e.keyCode==37 && paddleX > 0)
+                    paddleX -= 7;
+                else if(e.keyCode==39 && paddleX + paddleWidth < width)
+                    paddleX += 7;
+            }
+        };
+    })(document, 'getElementsByTagName', 'innerHTML', 'Start');
+</script>
+    </body> 
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html> 
+    <head> 
+        <title>JS1k, 1k demo submission [id]</title> 
+        <meta charset="utf-8" /> 
+    </head> 
+    <body> 
+        <canvas id="c"></canvas> 
+<script type="text/javascript">
+    p = function(document, parseFloat, value, Math, floor) {
+        var width=640, height=480, canvas = document.getElementById('c'), context = canvas.getContext('2d'),
+            replace = Object.getOwnPropertyNames(Math);
+            //'abs', 'acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'exp', 'floor', 'log', 'max', 'min', 'pow', 'random', 'round', 'sin', 'sqrt', 'tan', 'e', 'ln2', 'ln10', 'log2e', 'log10e', 'pi', 'sqrt1_2', 'sqrt2'];
+    
+        function plot() {
+            var inputs = document.getElementsByTagName('input'),
+                f = inputs[0][value],
+                xs = parseFloat(inputs[1][value]),
+                ys = parseFloat(inputs[2][value]),
+                xe = parseFloat(inputs[3][value]),
+                ye = parseFloat(inputs[4][value]),
+                image,
+                imageData,
+                regexp,
+                points = 1e5,
+                i, idx;
+
+            context.clearRect(0, 0, width, height);
+            context.beginPath();
+            idx = Math[floor](height/(1-ys/ye));
+            context.moveTo(0, idx);
+            context.lineTo(width, idx);
+            idx = Math[floor](width/(1-xs/xe));
+            context.moveTo(idx, 0);
+            context.lineTo(idx, height);
+            context.stroke();
+            
+            image = context.getImageData(0, 0, width, height);
+            imageData = image.data;
+        
+        
+            for(i=0; i<replace.length; i++) {
+                regexp = new RegExp(replace[i], 'ig');
+                f = f.replace(regexp, 'Math.'+replace[i]);
+            }
+            f = new Function('x', '{return '+f+';}');
+            
+            for(i=0; i<points; i++) {
+                idx = (Math[floor](i/points*width) + height-Math[floor]((f(xs+i/points*(xe-xs))-ye)*height/(ys-ye)) * width) * 4;
+                imageData[idx+2] = imageData[idx+3] = 255;
+            }
+            context.putImageData(image, 0, 0);
+        }
+        document.write('<br><form action="javascript:p()">f(x)=<input value="x"><br>TopLeft:<input value="-6">,<input value="4.5"><br>BottomRight:<input value="6">,<input value="-4.5"><br><input type="submit" value="Plot"></form><br>Functions and constants:'+replace.join(', '));
+        canvas.width=width;
+        canvas.height=height;
+        canvas.style.border = 'solid #000';
+        return plot;
+    }(document, parseFloat, 'value', Math, 'floor');
+</script>
+    </body> 
+</html>

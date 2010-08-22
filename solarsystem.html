@@ -10,8 +10,8 @@
             (function(window, Math, parseInt) {
                 var canvas = document.getElementById('c'),
                     context = canvas.getContext('2d'),
-                    width = 300,
-                    height = 225,
+                    width = 640,
+                    height = 480,
                     bg = '000000',
                     maxDistance = 1e5,
                     rads = [0.000016267, 0.000040667, 0.000042667, 0.000022667, 0.00048, 0.0004, 0.000173333, 0.000166667],
@@ -280,9 +280,9 @@
             canvas.height = height;
 
             // sun
-            //scene.a(sphere([0,0,0], 4.64/10, 'ffff00'));
-            scene.a(sphere([0,0,0], 5, 'ffff00'));
-            scene.a(sphere([10, -4, 1], 3, 'ff0000'));
+            scene.a(sphere([0,0,0], 4.64/10, 'ffff00'));
+            //scene.a(sphere([0,0,0], 5, 'ffff00'));
+            //scene.a(sphere([10, -4, 1], 3, 'ff0000'));
             scene.l(light([30,0,5], 'bbaa11'));
             scene.l(light([-30,0,-5], 'bbaa11'));
             //scene.l(light([0,30,0], 'bbaa11'));
@@ -291,16 +291,16 @@
             //scene.l(light([0,0,-20], 'bbaa11'));
 
             //var cen;
-            //for(var i=0;i<astrotable.length;i++) {
-//                cen = center(i);
-//                scene.a(sphere(cen, rads[i]*2500, colors[i]));
-//            }
+            for(var i=0;i<astrotable.length;i++) {
+                //cen = center(i);
+                scene.a(sphere(center(i), rads[i]*2500, colors[i]));
+            }
 
             /* move forward and back angle = 0.5;*/
             window.setTimeout(function() {
                 eye = [eyer*Math.sin(theta)*Math.cos(phi), eyer*Math.sin(theta)*Math.sin(phi), eyer*Math.cos(theta)];
                 rotation = [Math.sin(theta+1)*Math.cos(phi), Math.sin(theta+1)*Math.sin(phi), Math.cos(theta+1)];
-                look_at = vs(eye, eye, 1.02);
+                look_at = vs(eye, eye, 1.05);
 
                 scene.r(context);
 

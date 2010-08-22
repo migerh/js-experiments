@@ -1,0 +1,50 @@
+<!doctype html>
+<html> 
+    <head> 
+        <title>JS1k, 1k demo submission [id]</title> 
+        <meta charset="utf-8" /> 
+    </head> 
+    <body> 
+        <canvas id="c"></canvas> 
+<script type="text/javascript">
+    (function(document, parseFloat, value, Math, floor, toPrecision, input, fillRect, fillStyle) {
+       
+        var width=300, height=225, canvas = document.getElementById('c'), context = canvas.getContext('2d'),
+            inputs, replace = 'abs,acos,asin,atan,ceil,cos,exp,floor,log,max,min,pow,random,sin,sqrt,tan,E,PI'.split(',');
+                         //Object.getOwnPropertyNames(Math);
+
+        document.write('<br>f(x)='+input+'x>'+input+'Plot type=button>'+input.slice(0,7)+'id=p><br>TopLeft:'+input+'-6>,'+input+'4.5>BottomRight:'+input+'6>,'+input+'-4.5><br>Use '+replace.join(', '));
+        inputs = document.getElementsByTagName(input.slice(1,6));
+        //canvas.width=width;
+        canvas.height=height;
+        canvas.style.border = '3px solid #000';
+        
+        inputs[1].onclick = function() {
+            var f = inputs[0][value],
+                xs = parseFloat(inputs[3][value]),
+                ys = parseFloat(inputs[4][value]),
+                xe = parseFloat(inputs[5][value]),
+                ye = parseFloat(inputs[6][value]),
+                i, points = 1e5;
+
+            canvas.onmousemove = function(e) {
+                inputs[2][value] = [(xs+(e.pageX-canvas.offsetLeft-3)/width*(xe-xs))[toPrecision](4),((e.pageY-canvas.offsetTop-3)/height*(ye-ys)-ye)[toPrecision](4)];
+            };
+
+            context.clearRect(0, 0, width, height);
+            context[fillStyle] = '#000';
+            context[fillRect](0, Math[floor](height/(1-ys/ye)), width, 1);
+            context[fillRect](Math[floor](width/(1-xs/xe)), 0, 1, height);
+            
+            for(i=0; i<replace.length; i++)
+                f = f.replace(new RegExp(replace[i], 'ig'), 'Math.'+replace[i]);
+            f = new Function('x', '{return '+f+';}');
+            
+            context[fillStyle] = '#00f';
+            for(i=0; i<points; i++)
+                context[fillRect](Math[floor](i/points*width), height-Math[floor]((f(xs+i/points*(xe-xs))-ye)*height/(ys-ye)), 1, 1);
+        };
+    })(document, parseFloat, 'value', Math, 'floor', 'toPrecision',  '<input value=', 'fillRect', 'fillStyle');
+</script>
+    </body> 
+</html>

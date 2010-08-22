@@ -10,8 +10,8 @@
             (function(window, Math, parseInt) {
                 var canvas = document.getElementById('c'),
                     context = canvas.getContext('2d'),
-                    width = 800,
-                    height = 600,
+                    width = 300,
+                    height = 225,
                     bg = '000000',
                     maxDistance = 1e5,
                     rads = [0.000016267, 0.000040667, 0.000042667, 0.000022667, 0.00048, 0.0004, 0.000173333, 0.000166667],
@@ -72,6 +72,7 @@
                     // normalize a vector
                     normalize = function(v, f) {
                                 var d = f ? 1/f : Math.sqrt(sp(v,v));
+                                if( Math.abs(d) < 1e-8) return [0, 0, 0];
                                 return [v[0]/d, v[1]/d, v[2]/d];
                     },
 
@@ -199,13 +200,10 @@
                                     color,
                                     data = canvas.createImageData(width, height),
                                     datadata = data.data,
-                                    zx = normalize(vs(look_at, eye)),
-                                    xx = normalize(cp([0,1,0], zx)),
-                                    yx = (cp(xx, vs([0,0,0], zx))),
+                                    zx = vs(look_at, eye),
+                                    xx = normalize(vs(cp(rotation, zx), look_at)),
+                                    yx = normalize(vs(cp(xx, zx), look_at)),
                                     top_left = vs(vs(look_at, xx), yx, -height/width); 
-
-                                document.getElementById('frame').innerHTML += '[' + top_left.slice(0, 2).join(', ') + '], ';
-                                //document.getElementById('frame').innerHTML += 'top left distance to origin: ' + (sp(vs([0,0,0],top_left), vs([0,0,0],top_left)))+  ')\n';
 
                                 for (j = 0; j < height; j++) {
                                     for (i = 0; i < width; i++) {
@@ -273,7 +271,9 @@
                     theta = Math.PI/2,
                     eyer = 70,
                     eye,
-                    look_at, frame = 0;
+                    look_at,
+                    rotation,
+                    frame = 0;
 
             //canvas.style.backgroundColor = '#' + bg;
             canvas.width = width;
@@ -282,7 +282,7 @@
             // sun
             //scene.a(sphere([0,0,0], 4.64/10, 'ffff00'));
             scene.a(sphere([0,0,0], 5, 'ffff00'));
-            scene.a(sphere([10, 0, 0], 3, 'ff0000'));
+            scene.a(sphere([10, -4, 1], 3, 'ff0000'));
             scene.l(light([30,0,5], 'bbaa11'));
             scene.l(light([-30,0,-5], 'bbaa11'));
             //scene.l(light([0,30,0], 'bbaa11'));
@@ -299,9 +299,8 @@
             /* move forward and back angle = 0.5;*/
             window.setTimeout(function() {
                 eye = [eyer*Math.sin(theta)*Math.cos(phi), eyer*Math.sin(theta)*Math.sin(phi), eyer*Math.cos(theta)];
-                look_at = vs(eye, normalize(vs([0,0,0], eye)), -(eyer+1.5));
-                //document.getElementById('frame').innerHTML += 'frame no: ' + (frame++) + '; phi: ' + phi + '; ' + 'camera: (' + eye.join(', ') + '); look_at: (' + look_at.join(', ') + ')\n';
-                //document.getElementById('frame').innerHTML += '[' + look_at.slice(0, 2).join(', ') + '], ';
+                rotation = [Math.sin(theta+1)*Math.cos(phi), Math.sin(theta+1)*Math.sin(phi), Math.cos(theta+1)];
+                look_at = vs(eye, eye, 1.02);
 
                 scene.r(context);
 
@@ -309,8 +308,8 @@
                 if(phi>2*Math.PI)
                     phi-=2*Math.PI;
 
-                if(!stop)
-                window.setTimeout(arguments.callee, 1);
+                //if(!stop)
+                //window.setTimeout(arguments.callee, 1);
             }, 1);
 
             })(window, Math, parseInt);

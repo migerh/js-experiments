@@ -1,0 +1,13 @@
+<!doctype html>
+<html> 
+    <head> 
+        <title>JS1k, 1k demo submission [id]</title> 
+        <meta charset="utf-8" /> 
+    </head> 
+    <body> 
+        <canvas id="c"></canvas> 
+<script type="text/javascript">
+(function(i,o,k,c,h,n,j,f,l){var b=300,m=225,e=i.getElementById("c"),a=e.getContext("2d"),g,d="abs,acos,asin,atan,ceil,cos,exp,floor,log,max,min,pow,random,sin,sqrt,tan,E,PI".split(",");i.write("<br>f(x)="+j+"x>"+j+"Plot type=button>"+j.slice(0,7)+"id=p><br>TopLeft:"+j+"-6>,"+j+"4.5>BottomRight:"+j+"6>,"+j+"-4.5><br>Use "+d.join(", "));g=i.getElementsByTagName(j.slice(1,6));e.height=m;e.style.border="3px solid #000";g[1].onclick=function(){var u=g[0][k],p=o(g[3][k]),s=o(g[4][k]),t=o(g[5][k]),v=o(g[6][k]),q,r=1e5;e.onmousemove=function(w){g[2][k]=[(p+(w.pageX-e.offsetLeft-3)/b*(t-p))[n](4),((w.pageY-e.offsetTop-3)/m*(v-s)-v)[n](4)]};a.clearRect(0,0,b,m);a[l]="#000";a[f](0,c[h](m/(1-s/v)),b,1);a[f](c[h](b/(1-p/t)),0,1,m);for(q=0;q<d.length;q++){u=u.replace(new RegExp(d[q],"ig"),"Math."+d[q])}u=new Function("x","{return "+u+";}");a[l]="#00f";for(q=0;q<r;q++){a[f](c[h](q/r*b),m-c[h]((u(p+q/r*(t-p))-v)*m/(s-v)),1,1)}}})(document,parseFloat,"value",Math,"floor","toPrecision","<input value=","fillRect","fillStyle");
+</script>
+    </body> 
+</html>

@@ -1,0 +1,13 @@
+<!doctype html>
+<html> 
+    <head> 
+        <title>JS1k, 1k demo submission [id]</title> 
+        <meta charset="utf-8" /> 
+    </head> 
+    <body> 
+        <canvas id="c"></canvas> 
+<script type="text/javascript">
+(function(q,A,g,e){q.write('<br/><a href="#">'+e+"</a><p></p>");var y=q[A]("canvas")[0],l=q[A]("body")[0],s=q[A]("p")[0],a=q[A]("a")[0],r=480,p=360,B=60,i=12,k=349,w="Points:",m,o,n,z,x,h=y.getContext("2d"),b=0,v=0,f=1;function j(){h.fillRect(m,k-6,B,i);h.beginPath();h.arc(o,n,i,0,7,1);h.fill()}function u(){var c=1;if(!f){h.clearRect(0,0,r,p);o+=z;n+=x;if(n<i){x*=-1;n+=x}if(o<i||o>=r-i){z*=-1;o+=z}if(n>k-18&&n<p-5&&o>=m&&o<=m+B){x*=-1;n+=x;z+=(o-m-30)/5;s[g]=w+ ++v}j();if(!(n>p-i)){setTimeout(u,33)}else{s[g]+="-GAME OVER";f=1;b=0;a[g]=e}}}function t(){m=210;o=234;n=17;z=1.5;x=8;v=0;s[g]=w+v}function d(){if(!b){t()}b=1;if(f){a[g]="Pause";setTimeout(u,33)}else{a[g]="Continue"}f=!f}y.width=r;y.height=p;y.style.border="solid #000";a.onclick=d;t();j();q.onkeypress=q.onkeydown=q.onkeyup=function(c){if(!f){if(c.keyCode==37&&m>0){m-=7}else{if(c.keyCode==39&&m+B<r){m+=7}}}}})(document,"getElementsByTagName","innerHTML","Start");
+</script>
+    </body> 
+</html>

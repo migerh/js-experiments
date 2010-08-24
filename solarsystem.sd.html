@@ -17,33 +17,33 @@
                     bg = '000000',
                     origin = [0, 0, 0],
                     maxDistance = 1e5,
-                    rads = [0.000016267, 0.000040667, 0.000042667, 0.000022667, 0.00048, 0.0004, 0.000173333, 0.000166667],
+                    rads = [.016267, .040667, .042667, .022667, .48, .4, .173333, .166667],
                     AmbientLight = '888888',
                     colors = ['aaaaaa', 'ddaa88', '67aaff', 'ff0000', '445566', '009900', 'cc9900', '6666ff'],
                     SIXTEEN = 16, i,
 
                     // julian centuries since 2000
-                    T = Math.floor((new Date().getTime()-new Date(2000, 1, 1).getTime())/864e5)/36525,
-                    // astrotable minified with T = 'e'
-                    // [[.38709927+e*37e-8,.20563503+e*1906e-8,.12225995-e*10380e-8,252.25032350+e*149472.67411175,77.45779628+e*0.16047689,48.33076593-e*0.12534081],[.72333566+e*39e-7,677672e-8-e*4107e-8,.05924827-e*1377e-8,181.97909950+e*58517.81538729,131.60246718+e*268329e-8,76.67984255+e*0.27769418],[1.00000261+e*562e-8,.01671123-e*4392e-8,-26720991e-8-e*22596e-8,100.46457166+e*35999.37244981,102.93768193+e*0.32327364,0],[1.52371034+e*1847e-8,.09339410+e*7882e-8,.03228321-e*14192e-8,e*19140-4.55343205,e*0.44441088-23.94362959,49.55953891-e*0.29257343],[5.20288700-e*11607e-8,.04838624-e*13253e-8,.02276602-e*3206e-8,34.39644051+e*3034.74612775,14.72847983+e*0.21252668,100.47390909+e*0.20469106],[9.53667594-e*125060e-8,.05386179-e*50991e-8,.04338874+e*3379e-8,49.95424423+e*1222.49362201,92.59887831-e*0.41897216,113.66242448-e*0.28867794],[19.18916464-e*196176e-8,.04725744+e*4397e-8,.01348507-e*4240e-8,313.23810451+e*428.48202785,170.95427630+e*0.40805281,74.01692503+e*0.04240589],[30.06992276+e*26291e-8,859048e-8+e*5105e-8,.03089309+e*617e-8,e*218.45945325-55.12002969,44.96476227-e*0.32241464,131.78422574-e*508664e-8]]
+                    T = Math.floor((new Date().getTime()-9493596e5)/864e5)/36525,
+                    // astrotable minified with T = 'T'
+                    // [[.38709927+T*37e-8,.20563503+T*1906e-8,.12225995-T*10380e-8,4.40259868+T*2608.790305011,1.35189358+T*.00280085,.843531-T*.00218761],[.72333566+T*39e-7,677672e-8-T*4107e-8,.05924827-T*1377e-8,3.17613446+T*1021.32854958,2.29689636+T*4683e-8,1.33831572+T*.00484668],[1.00000261+T*562e-8,.01671123-T*4392e-8,-26720991e-8-T*22596e-8,1.75343756+T*628.30757790,1.79660147+T*.00564219,0],[1.52371034+T*1847e-8,.09339410+T*7882e-8,.03228321-T*14192e-8,T*334.05601883-.07947238,T*.00775643-.417895171,.86497713-T*.00510637],[5.20288700-T*11607e-8,.04838624-T*13253e-8,.02276602-T*3206e-8,.600331138+T*52.96631189,.257060467+T*.00370929,1.75360053+T*.00357253],[9.53667594-T*125060e-8,.05386179-T*50991e-8,.04338874+T*3379e-8,.871866037+T*21.33653879,1.61615531-T*.00731244,1.98378354-T*.00503838],[19.18916464-T*196176e-8,.04725744+T*4397e-8,.01348507-T*4240e-8,5.46703627+T*7.47842217,2.98371499+T*.00712187,1.29183904+T*74012e-8],[30.06992276+T*26291e-8,859048e-8+T*5105e-8,.03089309+T*617e-8,T*3.81283674-.962026002,.784783149-T*.005627197,2.30006864-T*8878e-8]]
                     astrotable = [
                         // mercury
                         //a: 0                          e: 1                               I: 2                                   L: 3                                                 omega_: 4                            Omega: 5
-                        [.38709927+T*37e-8,.20563503+T*1906e-8,.12225995-T*10380e-8,252.25032350+T*149472.67411175,77.45779628+T*0.16047689,48.33076593-T*0.12534081],
+                        [.38709927+T*37e-8,.20563503+T*1906e-8,.12225995-T*10380e-8,4.40259868+T*2608.790305011,1.35189358+T*.00280085,.843531-T*.00218761],
                         // venus
-                        [.72333566+T*39e-7,677672e-8-T*4107e-8,.05924827-T*1377e-8,181.97909950+T*58517.81538729,131.60246718+T*268329e-8,76.67984255+T*0.27769418],
+                        [.72333566+T*39e-7,677672e-8-T*4107e-8,.05924827-T*1377e-8,3.17613446+T*1021.32854958,2.29689636+T*4683e-8,1.33831572+T*.00484668],
                         // earth
-                        [1.00000261+T*562e-8,.01671123-T*4392e-8,-26720991e-8-T*22596e-8,100.46457166+T*35999.37244981,102.93768193+T*0.32327364,0],
+                        [1.00000261+T*562e-8,.01671123-T*4392e-8,-26720991e-8-T*22596e-8,1.75343756+T*628.30757790,1.79660147+T*.00564219,0],
                         // mars
-                        [1.52371034+T*1847e-8,.09339410+T*7882e-8,.03228321-T*14192e-8,T*19140-4.55343205,T*0.44441088-23.94362959,49.55953891-T*0.29257343],
+                        [1.52371034+T*1847e-8,.09339410+T*7882e-8,.03228321-T*14192e-8,T*334.05601883-.07947238,T*.00775643-.417895171,.86497713-T*.00510637],
                         // jupiter
-                        [5.20288700-T*11607e-8,.04838624-T*13253e-8,.02276602-T*3206e-8,34.39644051+T*3034.74612775,14.72847983+T*0.21252668,100.47390909+T*0.20469106],
+                        [5.20288700-T*11607e-8,.04838624-T*13253e-8,.02276602-T*3206e-8,.600331138+T*52.96631189,.257060467+T*.00370929,1.75360053+T*.00357253],
                         // saturn
-                        [9.53667594-T*125060e-8,.05386179-T*50991e-8,.04338874+T*3379e-8,49.95424423+T*1222.49362201,92.59887831-T*0.41897216,113.66242448-T*0.28867794],
+                        [9.53667594-T*125060e-8,.05386179-T*50991e-8,.04338874+T*3379e-8,.871866037+T*21.33653879,1.61615531-T*.00731244,1.98378354-T*.00503838],
                         // uranus
-                        [19.18916464-T*196176e-8,.04725744+T*4397e-8,.01348507-T*4240e-8,313.23810451+T*428.48202785,170.95427630+T*0.40805281,74.01692503+T*0.04240589],
+                        [19.18916464-T*196176e-8,.04725744+T*4397e-8,.01348507-T*4240e-8,5.46703627+T*7.47842217,2.98371499+T*.00712187,1.29183904+T*74012e-8],
                         // neptune
-                        [30.06992276+T*26291e-8,859048e-8+T*5105e-8,.03089309+T*617e-8,T*218.45945325-55.12002969,44.96476227-T*0.32241464,131.78422574-T*508664e-8]
+                        [30.06992276+T*26291e-8,859048e-8+T*5105e-8,.03089309+T*617e-8,T*3.81283674-.962026002,.784783149-T*.005627197,2.30006864-T*8878e-8]
                     ],
 
                     sin = Math.sin,
@@ -51,8 +51,9 @@
                     PI = Math.PI,
 
                     center = function(i) {
-                        var omega = Math.PI/180*(astrotable[i][4]-astrotable[i][5]),
-                            M = Math.PI/180*(astrotable[i][3]-astrotable[i][4]),
+                        var Omega = astrotable[i][5],
+                            omega = astrotable[i][4]-Omega,
+                            M = astrotable[i][3]-astrotable[i][4],
                             e = astrotable[i][1],
                             r = astrotable[i][0],
                             I = astrotable[i][2],
@@ -72,19 +73,18 @@
                         E = fixit(M, 1/maxDistance);
                         u = omega + 2*Math.atan(Math.sqrt((1+e)/(1-e))*Math.tan(E/2));
                         r *= (1-e*cos(E));
-                        return [r*(cos(u)*cos(astrotable[i][5])-sin(u)*cos(I)*sin(astrotable[i][5])),r*(cos(u)*sin(astrotable[i][5])+sin(u)*cos(I)*cos(astrotable[i][5])),r*(sin(u)*sin(I))];
+                        return [r*(cos(u)*cos(Omega)-sin(u)*cos(I)*sin(Omega)),r*(cos(u)*sin(Omega)+sin(u)*cos(I)*cos(Omega)),r*(sin(u)*sin(I))];
                     },
 
                     // normalize a vector
                     normalize = function(v, f) {
                         var d = f ? 1/f : Math.sqrt(sp(v,v));
-                        if( Math.abs(d) < 1e-8) return v;
-                        return [v[0]/d, v[1]/d, v[2]/d];
+                        return Math.abs(d) < 1e-8 ? v : [v[0]/d, v[1]/d, v[2]/d];
                     },
 
                     // subtract or add vectors: a - f*b
                     vs = function(a, b, f) {
-                        f = f ? f : 1;
+                        f = f || 1;
                         return [a[0]-f*b[0], a[1]-f*b[1], a[2]-f*b[2]];
                     },
 
@@ -123,8 +123,8 @@
                             t: function(start, direction) {
                                 var minDistance = maxDistance, intensity=[],
                                     i, j, k, numberOfObjects = objectList.length, numberOfLights = lightList.length,
-                                    objectIndex = numberOfObjects, shadow = false,
-                                    distance, normal, ref, nv, intersect, color, phong_size, phong_amount;
+                                    objectIndex = numberOfObjects, shadow = 0,
+                                    distance, normal, ref, nv, intersect, color;
 
                                 // find object nearest to the camera
                                 for (i = 0; i < numberOfObjects; i++) {
@@ -138,9 +138,6 @@
                                 if (objectIndex == numberOfObjects)
                                     color = bg;
                                 else {
-                                    //if(objectIndex == 0) return 'ff0';
-                                    //i = objectList[objectIndex].c;
-
                                     // Farbe am Schnittpunkt berechnen.
                                     intersect = vs(start, direction, -minDistance);
 
@@ -152,42 +149,28 @@
                                     nv = sp(normal, ref);
 
                                     ref = vs([0,0,0], vs(ref, normal, 2*nv));
-                                    // the same only longer:
-                                    //for(i=0;i<3;i++)ref[i]=2*distance_normal[i]*nv-ref[i];
 
                                     // Beleuchtung:
                                     color = AmbientLight;
                                     for(i = 0; i < numberOfLights; i++) {
                                         direction = lightList[i].c;
                                         // Schattenstrahl:
-                                        // don't trace to sun: j=1
                                         for(j = 0; j < numberOfObjects && !shadow; j++) {
                                             if(j != objectIndex && objectList[j].i(intersect, normalize(direction)) > 0)
-                                                shadow = true;
+                                                shadow = 1;
                                         }
 
                                         if(!shadow) {
                                             // Diffuse:
                                             j = sp(normal, direction);
 
-                                            for(k=0;k<3;k++) {
-                                                intensity[k] = parseInt(lightList[i].co[2*k]+lightList[i].co[2*k+1], SIXTEEN)/256*j;
-                                            }
-
-                                            // Specular:
-                                            j = sp(ref, direction);
-
-                                            phong_size = 1;
-                                            phong_amount = 1;
-                                            j = 0;//Math.pow(j, phong_size) * phong_amount;
                                             for(k=0;k<3;k++)
-                                                intensity[k] += parseInt(lightList[i].co[2*k]+lightList[i].co[2*k+1], SIXTEEN)/256*j;
+                                                intensity[k] = parseInt(lightList[i].co[2*k]+lightList[i].co[2*k+1], SIXTEEN)/256*j;
                                         }
                                     }
 
                                     for(k=0;k<3;k++) {
-                                        intensity[k] = (parseInt(color[2*k]+color[2*k+1], SIXTEEN)/256+intensity[k])*parseInt(objectList[objectIndex].c[2*k]+objectList[objectIndex].c[2*k+1], SIXTEEN)/256;
-                                        intensity[k] = pad(Math.ceil(Math.min(255, 16*intensity[k])).toString(SIXTEEN));
+                                        intensity[k] = pad(Math.ceil(Math.min(255, SIXTEEN*(parseInt(color[2*k]+color[2*k+1], SIXTEEN)/256+intensity[k])*parseInt(objectList[objectIndex].c[2*k]+objectList[objectIndex].c[2*k+1], SIXTEEN)/256)).toString(SIXTEEN));
                                     }
                                     color = intensity.join('');
                                 }
@@ -197,7 +180,6 @@
                             // render scene
                             r: function(canvas) {
                                 var i, j,
-                                    color, lastcolor,
                                     zx = vs(look_at, eye),
                                     xx = normalize(vs(cp(rotation, zx), look_at)),
                                     yx = normalize(vs(cp(xx, zx), look_at)),
@@ -205,9 +187,7 @@
 
                                 for (j = 0; j < height; j++) {
                                     for (i = 0; i < width; i++) {
-                                        color = this.t(eye, normalize(vs(vs(top_left, xx, -i/(width-1)*2), yx, j/(width-1)*2)));
-                                        if(color !== lastcolor) canvas.fillStyle = '#'+color;
-                                        lastcolor = color;
+                                        canvas.fillStyle = '#'+this.t(eye, normalize(vs(vs(top_left, xx, -i/(width-1)*2), yx, j/(width-1)*2)));
                                         canvas.fillRect(i, j, 1, 1);
                                     }
                                 }
@@ -220,11 +200,6 @@
                         return {
                             c: color,
 
-                            // set center
-                            sc: function(newcenter) {
-                                center = newcenter;
-                            },
-
                             // calculate the intersection
                             i: function(start, direction) {
                                 var i, SQ, DV, V;
@@ -233,10 +208,9 @@
                                 DV = sp(V, direction);
                                 SQ = DV * DV - (sp(V,V) - radius * radius);
 
-                                if (SQ < 0) {
-                                    //no intersection
+                                if (SQ < 0) // no intersection
                                     i = -1;
-                                } else {
+                                else {
                                     // intersection
                                     SQ = Math.sqrt(SQ);
                                     i = Math.min(SQ-DV,-DV-SQ);
@@ -256,13 +230,10 @@
                         };
                     },
                     pad = function(s) {
-                        if(s.length==1)
-                            s = '0'+s;
-                        return s;
+                        return s.length==1 ? '0'+s:s;
                     },
                     // UPS: universe positioning system
                     phi = PI,
-                    theta = PI/2,
                     eyer = 6,
                     eye,
                     dir = 1,
@@ -273,23 +244,22 @@
             canvas.height = height;
 
             // sun
-            scene.a(sphere(origin, 4.64e-3*50, 'ffff00'));
+            scene.a(sphere(origin, .232, 'ffff00'));
             scene.l(light([30,0,5], 'aaaaaa'));
             scene.l(light([-30,0,-5], 'aaaaaa'));
 
             //var cen;
             for(i=0;i<astrotable.length;i++)
-                scene.a(sphere(center(i), rads[i]*1000, colors[i]));
+                scene.a(sphere(center(i), rads[i], colors[i]));
 
-            /* move forward and back angle = 0.5;*/
             window.setTimeout(function() {
-                eye = [eyer*sin(theta)*cos(phi), eyer*sin(theta)*sin(phi), eyer*cos(theta)];
-                rotation = [sin(theta+1)*cos(phi), sin(theta+1)*sin(phi), cos(theta+1)];
+                eye = [eyer*cos(phi), eyer*sin(phi), 0];
+                rotation = [.6*cos(phi), .6*sin(phi), -.8];
                 look_at = vs(origin, normalize(vs(origin, eye)), -5);
 
                 scene.r(context);
 
-                phi += PI/16;
+                phi += PI/SIXTEEN;
                 if(phi>2*PI)
                     phi-=2*PI;
                 

@@ -13,13 +13,27 @@
 
         canvas = document.getElementById(canvas);
         context = canvas.getContext('2d');
-        
-        function normalize(x, y, z) {
-            var d = 1 / Math.sqrt(x * x + y * y + z * z);
-            x *= d;
-            y *= d;
-            z *= d;
-            return [x, y, z];
+
+        function vector(x, y, z) {
+            return {
+                x: x,
+                y: y,
+                z: z,
+                normalize: function() {
+                    var d = 1 / Math.sqrt(this.dot(this));
+                    this.x *= d;
+                    this.y *= d;
+                    this.z *= d;
+
+                    return this;
+                },
+                subtract: function(v) {
+                    return vector(this.x-v.x, this.y-v.y, this.z-v.z);
+                },
+                dot: function(v) {
+                    return this.x*v.x+this.y*v.y+this.z*v.z;
+                }
+            };
         }
 
         function loadImage(src, cb) {
@@ -41,26 +55,22 @@
         }
 
         function light(lx, ly) {
-            var lz = 40,
-                d, intensity, i=0, j=0, k, spec = 3, shiny = 20,
-                nx, ny, nz,
+            var lz = 100,
+                d, n,
+                intensity, i=0, j=0, k, spec = 3, shiny = 20,
                 x, y, sp,
                 imgData = context.getImageData(0, 0, canvas.width, canvas.height),
                 data = imgData.data;
 
             for(y=0; y<canvas.height; y++) {
                 for(x=0; x<canvas.width; x++) {
-                    nx = normals[i];
-                    ny = normals[i+1];
-                    nz = normals[i+2];
+                    n = vector(normals[i], normals[i+1], normals[i+2]);
 
-                    d = [lx - nx, ly - ny, lz];
-                    d = normalize.apply(this, d);
+                    d = vector(lx - x, ly - y, lz);
+                    sp = d.normalize().dot(n);
 
-                    sp = d[0]*nx + d[1]*ny + d[2]*nz;
-
-                    intensity = Math.pow(sp, 15)*spec;
-                    intensity += Math.pow(sp, 300)*shiny + 0.6; // 0.6 = ambient
+                    intensity = Math.pow(sp, 13)*spec;
+                    intensity += Math.pow(sp, 250)*shiny + 0.45; // 0.6 = ambient
 
                     for(k=0; k<3; k++) {
                         data[j+k] = Math.max(0, Math.min(255, Math.floor(textureData[j+k]*intensity)));
@@ -75,23 +85,21 @@
 
         normalImage = loadImage(normalmap, function() {
             var data = drawImage(normalImage, canvas).getImageData(0, 0, normalImage.width, normalImage.height).data,
-                x, y, z, i, d;
+                i, d;
 
             for(i=0; i<normalImage.width*normalImage.height*4; i += 4) {
-                x = data[i];
-                y = 255-data[i+1];
-                z = data[i+2];
-                d = normalize(x, y, z);
-                normals.push(d[0]);
-                normals.push(d[1]);
-                normals.push(d[2]);
+                d = vector(data[i], 255-data[i+1], data[i+2]);
+                d.normalize();
+                normals.push(d.x);
+                normals.push(d.y);
+                normals.push(d.z);
             }
 
             context.clearRect(0, 0, normalImage.width, normalImage.height);
             textureImage = loadImage(colormap, function() {
                 textureData = drawImage(textureImage, canvas).getImageData(0, 0, textureImage.width, textureImage.height).data;
                 canvas.onmousemove = function(e) {
-                    light(e.clientX-10, e.clientY-10);
+                    light(e.clientX+30, e.clientY+30);
                 };
                 light(230, 230);
             });

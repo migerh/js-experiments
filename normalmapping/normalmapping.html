@@ -1,0 +1,102 @@
+<!doctype html>
+<html> 
+    <head> 
+        <title>JS1k, 1k demo submission [id]</title> 
+        <meta charset="utf-8" /> 
+    </head> 
+    <body> 
+        <canvas id="c"></canvas> 
+<script type="text/javascript">
+    (function (canvas, colormap, normalmap) {
+        var normals = [], normalImage,
+            textureImage, textureData, context;
+
+        canvas = document.getElementById(canvas);
+        context = canvas.getContext('2d');
+        
+        function normalize(x, y, z) {
+            var d = 1 / Math.sqrt(x * x + y * y + z * z);
+            x *= d;
+            y *= d;
+            z *= d;
+            return [x, y, z];
+        }
+
+        function loadImage(src, cb) {
+            var img = document.createElement('img');
+            img.onload = cb;
+            img.src = src;
+            return img;
+        }
+
+        function drawImage(img, canvas) {
+            var ctx = canvas.getContext('2d');
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            return ctx;
+        }
+
+        function light(lx, ly) {
+            var lz = 40,
+                d, intensity, i=0, j=0, k, spec = 3, shiny = 20,
+                nx, ny, nz,
+                x, y, sp,
+                imgData = context.getImageData(0, 0, canvas.width, canvas.height),
+                data = imgData.data;
+
+            for(y=0; y<canvas.height; y++) {
+                for(x=0; x<canvas.width; x++) {
+                    nx = normals[i];
+                    ny = normals[i+1];
+                    nz = normals[i+2];
+
+                    d = [lx - nx, ly - ny, lz];
+                    d = normalize.apply(this, d);
+
+                    sp = d[0]*nx + d[1]*ny + d[2]*nz;
+
+                    intensity = Math.pow(sp, 15)*spec;
+                    intensity += Math.pow(sp, 300)*shiny + 0.6; // 0.6 = ambient
+
+                    for(k=0; k<3; k++) {
+                        data[j+k] = Math.max(0, Math.min(255, Math.floor(textureData[j+k]*intensity)));
+                    }
+
+                    i += 3;
+                    j += 4;
+                }
+            }
+            context.putImageData(imgData, 0, 0);
+        }
+
+        normalImage = loadImage(normalmap, function() {
+            var data = drawImage(normalImage, canvas).getImageData(0, 0, normalImage.width, normalImage.height).data,
+                x, y, z, i, d;
+
+            for(i=0; i<normalImage.width*normalImage.height*4; i += 4) {
+                x = data[i];
+                y = 255-data[i+1];
+                z = data[i+2];
+                d = normalize(x, y, z);
+                normals.push(d[0]);
+                normals.push(d[1]);
+                normals.push(d[2]);
+            }
+
+            context.clearRect(0, 0, normalImage.width, normalImage.height);
+            textureImage = loadImage(colormap, function() {
+                textureData = drawImage(textureImage, canvas).getImageData(0, 0, textureImage.width, textureImage.height).data;
+                canvas.onmousemove = function(e) {
+                    light(e.clientX-10, e.clientY-10);
+                };
+                light(230, 230);
+            });
+        });
+    })('c', 'img/colormap.jpg', 'img/normalmap.jpg');
+</script>
+    </body> 
+</html>

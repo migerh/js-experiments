@@ -1,3 +1,3 @@
-# js1k Demo
+# js-experiments
 
-My attempt of creating a demo for the [http://js1k.com](http://js1k.com) contest.
+Some JavaScript experiments.

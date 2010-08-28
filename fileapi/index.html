@@ -9,6 +9,7 @@
         <input type="file" id="files" name="files[]" multiple />
         <output id="filelist"></output>
     </form>
+    <a href="javascript:alert(document.getElementById('files').files[0].name)">Get Name</a>
 <script type="text/javascript">
     (function () {
         function supportsFileAPI() {

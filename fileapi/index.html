@@ -1,0 +1,36 @@
+<!doctype html>
+<html> 
+    <head> 
+        <title>HTML5 FileAPI</title> 
+        <meta charset="utf-8" /> 
+    </head> 
+    <body> 
+    <form>
+        <input type="file" id="files" name="files[]" multiple />
+        <output id="filelist"></output>
+    </form>
+<script type="text/javascript">
+    (function () {
+        function supportsFileAPI() {
+            return window.File && window.FileReader && window.FileList && window.Blob;
+        }
+        
+        function handleFileSelect(e) {
+            var files = e.target.files, // file list object
+                output = [], i, f;
+            for(i=0, f; f = files[i]; i++) {
+                output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ', f.size, ' bytes</li>');
+            }
+            document.getElementById('filelist').innerHTML = '<ul>' + output.join('') + '</ul>';
+        }
+        
+        if(!supportsFileAPI()) {
+            alert('not supported');
+            return;
+        }            
+        
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    })();
+</script>
+    </body> 
+</html>

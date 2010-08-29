@@ -5,10 +5,20 @@
         <meta charset="utf-8" /> 
     </head> 
     <body> 
+    <input type="file" id="fileinput" multiple />
     <div id="files">Drop files here</div>
     <div id="filelist"></div>
-    <a href="javascript:alert(document.getElementById('files').files[0].name)">Get Name</a>
+    <a href="javascript:getFileInfos()">Get file information</a>
 <script type="text/javascript">
+    function getFileInfos() {
+        var files = document.getElementById('fileinput').files, i, f, output = [];
+            
+        for(i=0; f = files[i]; i++) {
+            output.push('<li>', f.name, ' (', f.type, ') - ', f.size, ' Bytes, url: ', f.urn || 'n/a', '</li>');
+        }
+        document.getElementById('filelist').innerHTML = '<ul>' + output.join('') + '</ul>';
+    }
+        
     (function () {
         var file_drop = document.getElementById('files');
         
@@ -23,7 +33,7 @@
             var files = e.dataTransfer.files, // file list object
                 output = [], i, f;
             
-            for(i=0, f; f = files[i]; i++) {
+            for(i=0; f = files[i]; i++) {
                 output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ', f.size, ' bytes</li>');
             }
             document.getElementById('filelist').innerHTML = '<ul>' + output.join('') + '</ul>';
@@ -37,10 +47,10 @@
         if(!supportsFileAPI()) {
             alert('not supported');
             return;
-        }            
+        }
         
         file_drop.addEventListener('dragover', handleDragOver, false);
-        file_drop.addEventListener('drop', handleFileSelect, false);
+        file_drop.addEventListener('drop', handleDrop, false);
     })();
 </script>
     </body> 

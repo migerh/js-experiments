@@ -9,6 +9,7 @@
     <div id="files">Drop files here</div>
     <div id="filelist"></div>
     <a href="javascript:getFileInfos()">Get file information</a>
+    <audio id="player" preload="none" src="">Audio tag is not supported.</audio>
 <script type="text/javascript">
     function getFileInfos() {
         var files = document.getElementById('fileinput').files, i, f, output = [];
@@ -20,10 +21,26 @@
     }
         
     (function () {
-        var file_drop = document.getElementById('files');
+        var file_drop = document.getElementById('files'),
+            player = document.getElementById('player'),
+            audiofiles = [], currentFile;
         
         function supportsFileAPI() {
             return window.File && window.FileReader && window.FileList && window.Blob;
+        }
+        
+        function playFile(idx) {
+            var freader = new FileReader(),
+                f = audiofiles[idx];
+                
+            freader.onload = (function(theFile) {
+                return function(e) {
+                    player.src = e.target.result;
+                    player.play();
+                };
+            })(f);
+            currentFile = idx;
+            freader.readAsDataURL(f);
         }
         
         function handleDrop(e) {
@@ -35,13 +52,31 @@
             
             for(i=0; f = files[i]; i++) {
                 output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ', f.size, ' bytes</li>');
+                if(f.type === 'audio/mp3')
+                    audiofiles.push(f);
             }
             document.getElementById('filelist').innerHTML = '<ul>' + output.join('') + '</ul>';
+            
+            if(audiofiles.length === 0) return;
+            playFile(0);
         }
         
         function handleDragOver(e) {
             e.stopPropagation();
             e.preventDefault();
+        }
+        
+        function handleEnded(e) {
+            console.log('ended');
+            currentFile++;
+            if(currentFile === audiofiles.length)
+                currentFile = 0;
+            
+            playFile(currentFile);
+        }
+        
+        function handlePlayerLoad(e) {
+            player.play();
         }
         
         if(!supportsFileAPI()) {
@@ -51,6 +86,8 @@
         
         file_drop.addEventListener('dragover', handleDragOver, false);
         file_drop.addEventListener('drop', handleDrop, false);
+        player.addEventListener('ended', handleEnded, false);
+        player.addEventListener('load', handlePlayerLoad, false);
     })();
 </script>
     </body> 

@@ -31,7 +31,7 @@
     <div id="playercontrols">
         <audio id="player" src="">Audio tag is not supported.</audio>
         <a href="javascript:" id="rw">&lt;&lt;</a>
-        <a href="javascript:document.getElementById('player').play();">|&gt;</a>
+        <a href="javascript:" id="play">|&gt;</a>
         <a href="javascript:document.getElementById('player').pause();">||</a>
         <a href="javascript:" id="ff">&gt;&gt;</a>
     </div>
@@ -70,9 +70,6 @@
                     audiofiles.push(f);
             }
             document.getElementById('filelistul').innerHTML += output.join('');
-            
-            if(audiofiles.length === 0) return;
-            playFile(0);
         }
         
         function handleDragOver(e) {
@@ -103,6 +100,13 @@
         function handleProgress(e) {
             console.log(e);
         }
+
+        function handlePlay(e) {
+            if(currentFile)
+                player.play();
+            else
+                playFile(0);
+        }
         
         if(!supportsFileAPI()) {
             alert('not supported');
@@ -117,6 +121,7 @@
 
         document.getElementById('ff').addEventListener('click', handleEnded, false);
         document.getElementById('rw').addEventListener('click', handleRW, false);
+        document.getElementById('play').addEventListener('click', handlePlay, false);
     })();
 </script>
     </body> 

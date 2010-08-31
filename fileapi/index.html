@@ -30,6 +30,7 @@
     <div id="filelist">Your playlist:<ul id="filelistul"></ul></div>
     <div id="playercontrols">
         <audio id="player" src="">Audio tag is not supported.</audio>
+        <table><tr><td style="background-color: #eee; width: 0px; height: 10px;" id="done"></td><td style="background-color: white; width: 400px; height: 10px;" id="todo"></td></tr></table>
         <a href="javascript:" id="rw">&lt;&lt;</a>
         <a href="javascript:" id="play">|&gt;</a>
         <a href="javascript:document.getElementById('player').pause();">||</a>
@@ -98,7 +99,13 @@
         }
 
         function handleProgress(e) {
-            console.log(e);
+            var total = e.target.duration,
+                current = e.target.currentTime;
+
+            document.getElementById('done').style.width = current/total*400 + 'px';
+            document.getElementById('todo').style.width = 400 - current/total*400 + 'px';
+            if(!e.target.paused && !e.target.ended)
+                window.setTimeout(function() { return handleProgress({target: player}); }, 1000);
         }
 
         function handlePlay(e) {
@@ -106,6 +113,7 @@
                 player.play();
             else
                 playFile(0);
+            window.setTimeout(function() { return handleProgress({target: player}); }, 1000);            
         }
         
         if(!supportsFileAPI()) {
@@ -116,7 +124,6 @@
         file_drop.addEventListener('dragover', handleDragOver, false);
         file_drop.addEventListener('drop', handleDrop, false);
         player.addEventListener('ended', handleEnded, false);
-        player.addEventListener('progress', handleProgress, false);
         player.addEventListener('load', handlePlayerLoad, false);
 
         document.getElementById('ff').addEventListener('click', handleEnded, false);

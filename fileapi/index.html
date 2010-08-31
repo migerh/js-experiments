@@ -2,24 +2,40 @@
 <html> 
     <head> 
         <title>HTML5 FileAPI</title> 
-        <meta charset="utf-8" /> 
+        <meta charset="utf-8" />
+        <style type="text/css">
+            #files {
+                width: 400px;
+                height: 200px;
+                background-color: #CDEB8B;
+                text-align: center;
+                display: table-cell;
+                vertical-align: middle;
+                border: 1px solid #eee;
+            }
+
+            #playercontrols, #filelist {
+                border: 1px solid #eeeeee;
+                width: 400px;
+            }
+
+            #playercontrols {
+                text-align: center;
+            }
+        </style>
     </head> 
-    <body> 
-    <input type="file" id="fileinput" multiple />
-    <div id="files">Drop files here</div>
-    <div id="filelist"></div>
-    <a href="javascript:getFileInfos()">Get file information</a>
-    <audio id="player" preload="none" src="">Audio tag is not supported.</audio>
+    <body>
+    This is an HTML5 mp3 player - no plugins required!
+    <div id="files">Drop zone! Drop your mp3 files here</div>
+    <div id="filelist">Your playlist:<ul id="filelistul"></ul></div>
+    <div id="playercontrols">
+        <audio id="player" src="">Audio tag is not supported.</audio>
+        <a href="javascript:" id="rw">&lt;&lt;</a>
+        <a href="javascript:document.getElementById('player').play();">|&gt;</a>
+        <a href="javascript:document.getElementById('player').pause();">||</a>
+        <a href="javascript:" id="ff">&gt;&gt;</a>
+    </div>
 <script type="text/javascript">
-    function getFileInfos() {
-        var files = document.getElementById('fileinput').files, i, f, output = [];
-            
-        for(i=0; f = files[i]; i++) {
-            output.push('<li>', f.name, ' (', f.type, ') - ', f.size, ' Bytes, url: ', f.urn || 'n/a', '</li>');
-        }
-        document.getElementById('filelist').innerHTML = '<ul>' + output.join('') + '</ul>';
-    }
-        
     (function () {
         var file_drop = document.getElementById('files'),
             player = document.getElementById('player'),
@@ -33,12 +49,10 @@
             var freader = new FileReader(),
                 f = audiofiles[idx];
                 
-            freader.onload = (function(theFile) {
-                return function(e) {
-                    player.src = e.target.result;
-                    player.play();
-                };
-            })(f);
+            freader.onload = function(e) {
+                player.src = e.target.result;
+                player.play();
+            };
             currentFile = idx;
             freader.readAsDataURL(f);
         }
@@ -51,11 +65,11 @@
                 output = [], i, f;
             
             for(i=0; f = files[i]; i++) {
-                output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ', f.size, ' bytes</li>');
+                output.push('<li><strong>', f.name, '<'+'/strong> - ', f.size, ' bytes<'+'/li>');
                 if(f.type === 'audio/mp3')
                     audiofiles.push(f);
             }
-            document.getElementById('filelist').innerHTML = '<ul>' + output.join('') + '</ul>';
+            document.getElementById('filelistul').innerHTML += output.join('');
             
             if(audiofiles.length === 0) return;
             playFile(0);
@@ -67,16 +81,27 @@
         }
         
         function handleEnded(e) {
-            console.log('ended');
             currentFile++;
             if(currentFile === audiofiles.length)
                 currentFile = 0;
-            
+            else
+                playFile(currentFile);
+        }
+
+        function handleRW(e) {
+            currentFile--;
+            if(currentFile === -1)
+                currentFile = audiofiles.length-1;
+
             playFile(currentFile);
         }
         
         function handlePlayerLoad(e) {
             player.play();
+        }
+
+        function handleProgress(e) {
+            console.log(e);
         }
         
         if(!supportsFileAPI()) {
@@ -87,7 +112,11 @@
         file_drop.addEventListener('dragover', handleDragOver, false);
         file_drop.addEventListener('drop', handleDrop, false);
         player.addEventListener('ended', handleEnded, false);
+        player.addEventListener('progress', handleProgress, false);
         player.addEventListener('load', handlePlayerLoad, false);
+
+        document.getElementById('ff').addEventListener('click', handleEnded, false);
+        document.getElementById('rw').addEventListener('click', handleRW, false);
     })();
 </script>
     </body> 

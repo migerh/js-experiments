@@ -115,9 +115,19 @@
                 playFile(0);
             window.setTimeout(function() { return handleProgress({target: player}); }, 1000);            
         }
+
+        function hideControls(message) {
+            document.getElementById('files').innerHTML = message + ' But <a href="http://www.google.com/chrome">Google Chrome<'+'/a> does. You should try it!';
+            document.getElementById('files').style.backgroundColor = '#D15600';
+            document.getElementById('playercontrols').style.display = 'none';
+            document.getElementById('filelist').style.display = 'none';
+        }
         
         if(!supportsFileAPI()) {
-            alert('not supported');
+            hideControls('Your browser does not support the FileAPI.');
+            return;
+        } else if (!(typeof player.canPlayType === "function" && player.canPlayType("audio/mpeg") !== "")) {
+            hideControls('Your browser does not support the HTML5 audio tag with mp3.');
             return;
         }
         

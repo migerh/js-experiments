@@ -2,13 +2,108 @@
 <html> 
     <head> 
         <title>Cracking a captcha</title> 
-        <meta charset="utf-8" /> 
+        <meta charset="utf-8" />
+        <style type="text/css">
+            img {
+                border: 1px solid black;
+            }
+        </style>
     </head> 
     <body> 
-        <img src="examples/secureimage1.png" />
+    <img src="examples/secureimage.php.png" />
+    <img src="examples/secureimage1.png" />
+    <img src="examples/secureimage2.png" />
+    <img src="examples/secureimage3.png" />
 <script type="text/javascript">
     (function () {
-        
+        var img, k, images = document.getElementsByTagName('img');
+
+        for(k=0; k<images.length; k++) {
+            if (images[k].src.indexOf('secureimage') > -1) {
+                img = images[k];
+
+                (function(img, k) {
+                    img.onload = function() {
+                        var canvas = document.createElement('canvas'), context = canvas.getContext('2d'),
+                            i, j, idx, ridx, idata, data,
+                            xmin = canvas.width, ymin = canvas.height, xmax = 0, ymax = 0,
+                            cx, cy, width, height;
+
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        width = img.width;
+                        height = img.height;
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.drawImage(img, 0, 0);
+
+                        idata = context.getImageData(0, 0, canvas.width, canvas.height);
+                        data = idata.data;
+
+                        for (i = 0; i < canvas.width; i++) {
+                            for (j = 0; j < canvas.height; j++) {
+                                idx = (i + j * canvas.width) * 4;
+
+                                if (data[idx + 0] !== 0x77 || data[idx + 1] !== 0xb8) {
+                                    data[idx + 0] = 0xff;
+                                    data[idx + 1] = 0xff;
+                                    data[idx + 2] = 0xff;
+                                } else {
+                                    data[idx + 0] = 0;
+                                    data[idx + 1] = 0;
+                                    data[idx + 2] = 0;
+                                    data[idx + 3] = 0xff;
+
+                                    if (i < xmin)
+                                        xmin = i;
+                                    if (i > xmax)
+                                        xmax = i;
+
+                                    if (j < ymin)
+                                        ymin = j;
+                                    if (j > ymax)
+                                        ymax = j;
+                                }
+                            }
+                        }
+
+                        cx = xmin + (xmax - xmin) / 2;
+                        cy = ymin + (ymax - ymin) / 2;
+
+                        context.putImageData(idata, 0, 0);
+                        idata = context.getImageData(xmin, ymin, xmax - xmin, ymax - ymin);
+                        canvas.width = xmax - xmin;
+                        canvas.height = ymax - ymin;
+                        context.putImageData(idata, 0, 0);
+
+                        //console.log(['x ', xmin, ' to ', xmax, '; y ', ymin, ' to ', ymax, ' center: ', cx, ', ', cy].join(''));
+
+                        img.onload = function () {
+                            var h = 70, w = 250, dx = xmax - xmin, dy = ymax - ymin, phi, c = (w * dx - h * dy) / (w * w - h * h);
+
+                            // get phi
+                            if (c > 1)
+                                phi = -Math.acos(1 - (c - 1)) / 2; // some kind of heuristic
+                            else
+                                phi = Math.acos(c);
+                            //console.log('k: ' + k + ', ' + (w*dx - h*dy)/(w*w-h*h) + '; phi: ' + phi);
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            context.fillStyle = 'rgba(255, 255, 255, 255)';
+                            context.fillRect(0, 0, canvas.width, canvas.height);
+                            context.rotate(-phi);
+                            context.drawImage(img, cx - w / 2, cy - h / 2);
+                            img.onload = null;
+
+                            img.src = canvas.toDataURL();
+                        };
+
+                        img.src = canvas.toDataURL();
+                    };
+                })(img, k);
+
+            }
+        }
     })();
 </script>
     </body> 

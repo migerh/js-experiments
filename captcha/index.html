@@ -9,17 +9,27 @@
             }
         </style>
     </head> 
-    <body> 
-    <img src="examples/secureimage.php.png" />
-    <img src="examples/secureimage1.png" />
-    <img src="examples/secureimage2.png" />
-    <img src="examples/secureimage3.png" />
+    <body>
+    <table>
+        <tr>
+            <td><img src="examples/secureimage.php.png" class="keep" /></td><td><img src="examples/secureimage.php.png" /></td>
+        </tr>
+        <tr>
+            <td><img src="examples/secureimage1.png" class="keep" /></td><td><img src="examples/secureimage1.png" /></td>
+        </tr>
+        <tr>
+            <td><img src="examples/secureimage2.png" class="keep" /></td><td><img src="examples/secureimage2.png" /></td>
+        </tr>
+        <tr>
+            <td><img src="examples/secureimage3.png" class="keep" /></td><td><img src="examples/secureimage3.png" /></td>
+        </tr>
+    </table>
 <script type="text/javascript">
     (function () {
         var img, k, images = document.getElementsByTagName('img');
 
         for(k=0; k<images.length; k++) {
-            if (images[k].src.indexOf('secureimage') > -1) {
+            if (images[k].src.indexOf('secureimage') > -1 && !images[k].getAttribute('class')) {
                 img = images[k];
 
                 (function(img, k) {
@@ -27,7 +37,8 @@
                         var canvas = document.createElement('canvas'), context = canvas.getContext('2d'),
                             i, j, idx, ridx, idata, data,
                             xmin = canvas.width, ymin = canvas.height, xmax = 0, ymax = 0,
-                            cx, cy, width, height;
+                            cx, cy, width, height,
+                            http, params;
 
                         canvas.width = img.width;
                         canvas.height = img.height;
@@ -96,6 +107,22 @@
                             img.onload = null;
 
                             img.src = canvas.toDataURL();
+                            data = img.src.split(',')[1];
+
+                            http = new XMLHttpRequest();
+
+                            params = 'data=' + encodeURI(data);
+                            http.open("POST", 'ocr.py', true);
+
+                            // Send the proper header information along with the request
+                            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                            http.onreadystatechange = function() {
+                                if (http.readyState == 4 && http.status == 200) {
+                                    img.parentNode.appendChild(document.createTextNode(http.responseText.replace(' ', '')));
+                                }
+                            };
+                            http.send(params);
                         };
 
                         img.src = canvas.toDataURL();
